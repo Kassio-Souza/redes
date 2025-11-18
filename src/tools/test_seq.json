@@ -1,0 +1,98 @@
+[
+  {
+    "name": "REGISTER ok with ttl",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "room1", "name": "peerA", "port": 4000, "ttl": 60 },
+    "expect": { "status": "OK", "subset": { "status": "OK", "ttl": 60 }, "has": ["observed_ip","observed_port"], "types": { "ttl": "int", "observed_ip": "str", "observed_port": "int" } }
+  },
+  {
+    "name": "REGISTER ok default ttl(7200)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "room1", "name": "peerB", "port": 5000 },
+    "expect": { "status": "OK", "subset": { "status": "OK", "ttl": 7200 }, "has": ["observed_ip","observed_port"], "types": { "ttl": "int" } }
+  },
+  {
+    "name": "REGISTER bad namespace (empty)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "", "name": "badPeer", "port": 1234 },
+    "expect": { "subset": { "status": "ERROR", "error": "bad_namespace" } }
+  },
+  {
+    "name": "REGISTER bad port (out of range)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "room1", "name": "badPort", "port": 99999 },
+    "expect": { "subset": { "status": "ERROR", "error": "bad_port" } }
+  },
+  {
+    "name": "DISCOVER room1 (after 2 regs)",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "room1" },
+    "expect": { "subset": { "status": "OK" }, "has": ["peers"], "types": { "peers": "list" } }
+  },
+  {
+    "name": "DISCOVER room2 (empty)",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "room2" },
+    "expect": { "equals": { "status": "OK", "peers": [] } }
+  },
+  {
+    "name": "DISCOVER without namespace (all)",
+    "mode": "json",
+    "send": { "type": "DISCOVER" },
+    "expect": { "subset": { "status": "OK" }, "has": ["peers"], "types": { "peers": "list" } }
+  },
+  {
+    "name": "UNREGISTER room1 (all from my ip)",
+    "mode": "json",
+    "send": { "type": "UNREGISTER", "namespace": "room1" },
+    "expect": { "equals": { "status": "OK" } }
+  },
+  {
+    "name": "DISCOVER room1 after unregister (structure only)",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "room1" },
+    "expect": { "subset": { "status": "OK" }, "has": ["peers"], "types": { "peers": "list" } }
+  },
+  {
+    "name": "UNREGISTER invalid port (string) -> ERROR (accept both literal and interpolated message)",
+    "mode": "json",
+    "send": { "type": "UNREGISTER", "namespace": "room2", "port": "abc" },
+    "expect": { "subset": { "status": "ERROR" }, "regex": "bad_port" }
+  },
+  {
+    "name": "Unknown command",
+    "mode": "json",
+    "send": { "type": "INVALIDCMD" },
+    "expect": { "equals": { "status": "ERROR", "message": "Unknown command" } }
+  },
+  {
+    "name": "JSON without type -> parser ERROR -> Unknown command",
+    "mode": "json",
+    "send": { "foo": "bar" },
+    "expect": { "equals": { "status": "ERROR", "message": "Unknown command" } }
+  },
+  {
+    "name": "REGISTER missing fields",
+    "mode": "json",
+    "send": { "type": "REGISTER" },
+    "expect": { "subset": { "status": "ERROR" } }
+  },
+  {
+    "name": "DISCOVER with numeric namespace (no matches)",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": 123 },
+    "expect": { "equals": { "status": "OK", "peers": [] } }
+  },
+  {
+    "name": "Empty line -> 'Empty request line'",
+    "mode": "raw",
+    "send": "",
+    "expect": { "equals": { "status": "ERROR", "message": "Empty request line" } }
+  },
+  {
+    "name": "Line too long (>32KB) -> line_too_long (synthetic)",
+    "mode": "synth",
+    "synth": { "pattern": "curly_a", "count": 33000 },
+    "expect": { "subset": { "status": "ERROR", "error": "line_too_long" }, "regex": "\"limit\"\\s*:\\s*32768" }
+  }
+]

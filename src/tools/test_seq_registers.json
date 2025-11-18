@@ -1,0 +1,62 @@
+[
+  {
+    "name": "REGISTER alice@UnB",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "UnB", "name": "alice", "port": 4100, "ttl": 120 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER bob@UnB",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "UnB", "name": "bob", "port": 4101, "ttl": 300 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER carol@UnB (ttl default)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "UnB", "name": "carol", "port": 4102 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER davi@UnB",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "UnB", "name": "davi", "port": 4103, "ttl": 600 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER erika@UnB",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "UnB", "name": "erika", "port": 4104, "ttl": 60 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER frank@Giga",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "Giga", "name": "frank", "port": 4200, "ttl": 180 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER giulia@Giga (ttl default)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "Giga", "name": "giulia", "port": 4201 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER henry@Giga",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "Giga", "name": "henry", "port": 4202, "ttl": 900 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER isabel@Giga",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "Giga", "name": "isabel", "port": 4203, "ttl": 45 },
+    "expect": { "status": "OK" }
+  },
+  {
+    "name": "REGISTER joao@Giga",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "Giga", "name": "joao", "port": 4204, "ttl": 300 },
+    "expect": { "status": "OK" }
+  }
+]

@@ -1,0 +1,111 @@
+[
+  {
+    "name": "REGISTER bad name (empty) -> bad_name",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "", "port": 1234 },
+    "expect": { "equals": { "status": "ERROR", "error": "bad_name" } }
+  },
+  {
+    "name": "REGISTER bad name (>64 chars) -> bad_name",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "port": 1234 },
+    "expect": { "equals": { "status": "ERROR", "error": "bad_name" } }
+  },
+  {
+    "name": "REGISTER bad ttl (string) -> bad_ttl",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "peerTTL", "port": 1234, "ttl": "oops" },
+    "expect": { "equals": { "status": "ERROR", "error": "bad_ttl" } }
+  },
+  {
+    "name": "REGISTER ttl clamp below 1 -> becomes 1",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "peerClampLow", "port": 1234, "ttl": 0 },
+    "expect": { "subset": { "status": "OK" }, "regex": "\"ttl\"\\s*:\\s*1" }
+  },
+  {
+    "name": "REGISTER ttl clamp above 86400 -> becomes 86400",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "peerClampHigh", "port": 1234, "ttl": 1000000 },
+    "expect": { "subset": { "status": "OK" }, "regex": "\"ttl\"\\s*:\\s*86400" }
+  },
+  {
+    "name": "REGISTER bad port (0) -> bad_port",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "p0", "port": 0 },
+    "expect": { "equals": { "status": "ERROR", "error": "bad_port" } }
+  },
+  {
+    "name": "REGISTER bad port (negative) -> bad_port",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomX", "name": "pneg", "port": -5 },
+    "expect": { "equals": { "status": "ERROR", "error": "bad_port" } }
+  },
+  {
+    "name": "REGISTER upsert same (ip,ns,name) -> no duplicate",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomUp", "name": "same", "port": 1111, "ttl": 60 },
+    "expect": { "subset": { "status": "OK" } }
+  },
+  {
+    "name": "REGISTER upsert update (same key, new port)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomUp", "name": "same", "port": 2222, "ttl": 120 },
+    "expect": { "subset": { "status": "OK" } }
+  },
+  {
+    "name": "DISCOVER roomUp confirms updated peer (port=2222)",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "roomUp" },
+    "expect": { "subset": { "status": "OK" }, "regex": "\"port\"\\s*:\\s*2222" }
+  },
+  {
+    "name": "UNREGISTER by namespace+name removes only that peer",
+    "mode": "json",
+    "send": { "type": "UNREGISTER", "namespace": "roomUp", "name": "same" },
+    "expect": { "equals": { "status": "OK" } }
+  },
+  {
+    "name": "UNREGISTER without namespace -> removes nothing (current behavior)",
+    "mode": "json",
+    "send": { "type": "UNREGISTER" },
+    "expect": { "equals": { "status": "OK" } }
+  },
+  {
+    "name": "Whitespace-only line -> 'Empty request line'",
+    "mode": "raw",
+    "send": "   ",
+    "expect": { "equals": { "status": "ERROR", "message": "Empty request line" } }
+  },
+  {
+    "name": "JSON invalid syntax -> parser invalid_json -> Unknown command",
+    "mode": "raw",
+    "send": "{foo}",
+    "expect": { "equals": { "status": "ERROR", "message": "Unknown command" } }
+  },
+  {
+    "name": "Line valid but big (~32000 chars) -> accepted",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" },
+    "expect": { "subset": { "status": "OK" } }
+  },
+  {
+    "name": "REGISTER small TTL=2s (roomTTL)",
+    "mode": "json",
+    "send": { "type": "REGISTER", "namespace": "roomTTL", "name": "short", "port": 3333, "ttl": 2 },
+    "expect": { "subset": { "status": "OK" } }
+  },
+  {
+    "name": "DISCOVER roomTTL shows expires_in",
+    "mode": "json",
+    "send": { "type": "DISCOVER", "namespace": "roomTTL" },
+    "expect": { "subset": { "status": "OK" }, "regex": "\"expires_in\"\\s*:\\s*\\d+" }
+  },
+  {
+    "name": "WAIT > TTL then DISCOVER empty",
+    "mode": "json",
+    "delay": 3,
+    "send": { "type": "DISCOVER", "namespace": "roomTTL" },
+    "expect": { "equals": { "status": "OK", "peers": [] } }
+  }
+]
