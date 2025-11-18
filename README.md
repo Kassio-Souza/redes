@@ -305,4 +305,33 @@ Para evitar abusos, o servidor impõe as seguintes restrições:
 2. Envia um **REGISTER** para se anunciar.  
 3. Usa **DISCOVER** para consultar peers de um namespace.  
 4. Pode **UNREGISTER** ao sair.  
-5. Se o TTL expirar, o registro desaparece automaticamente.  
+5. Se o TTL expirar, o registro desaparece automaticamente.
+
+## Cliente P2P
+
+O repositório inclui um **cliente P2P** compatível com a especificação do trabalho. Ele registra o peer no Rendezvous, descobre pares periodicamente, estabelece conexões TCP com `HELLO/HELLO_OK`, mantém keep-alive com `PING/PONG`, envia mensagens diretas (`SEND/ACK`), difusão (`PUB`) e encerra sessões com `BYE/BYE_OK`.
+
+### Execução
+
+```bash
+python -m p2p.p2p_client <nome> <namespace> <porta>
+```
+
+Parâmetros úteis:
+
+- `--rdv-host` e `--rdv-port`: endereço do rendezvous (padrão `pyp2p.mfcaetano.cc:8080`).
+- `--ping`: intervalo de PING (segundos).
+- `--discover`: intervalo de descoberta automática.
+- `--ttl`: TTL do registro no rendezvous.
+
+### Comandos da CLI
+
+- `/peers`: força descoberta/atualização de peers.
+- `/msg <peer_id> <mensagem>`: envia mensagem direta (ACK automático).
+- `/pub * <mensagem>`: broadcast global.
+- `/pub #<namespace> <mensagem>`: difusão para o namespace.
+- `/conn`: lista conexões ativas (in/outbound).
+- `/rtt`: exibe RTT médio por conexão.
+- `/reconnect`: força reconciliação e novas conexões.
+- `/log <NÍVEL>`: ajusta log (ex.: DEBUG).
+- `/quit`: encerra o cliente enviando `BYE` e `UNREGISTER`.
